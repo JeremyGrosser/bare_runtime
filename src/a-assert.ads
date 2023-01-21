@@ -48,7 +48,7 @@ with System.Assertions;
 pragma Warnings (On);
 
 package Ada.Assertions with
-  SPARK_Mode
+  SPARK_Mode => On
 is
    pragma Pure (Assertions);
 

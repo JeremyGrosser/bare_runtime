@@ -29,9 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body Ada.Assertions with
-  SPARK_Mode
-is
+package body Ada.Assertions is
    ------------
    -- Assert --
    ------------
