@@ -28,39 +28,9 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+with System.Machine_Reset;
 
 package body Ada.Exceptions is
-
-   procedure Last_Chance_Handler (Msg : System.Address; Line : Integer);
-   pragma Import (C, Last_Chance_Handler, "__gnat_last_chance_handler");
-   pragma No_Return (Last_Chance_Handler);
-
-   Empty_C_String : aliased constant String := (1 => ASCII.NUL);
-
-   procedure Call_Last_Chance_Handler_With_Message (Message : String);
-   pragma No_Return (Call_Last_Chance_Handler_With_Message);
-   --  Convert an exception message string to a NUL terminated C string and
-   --  call the last chance handler.
-
-   procedure Call_Last_Chance_Handler_With_Message (Message : String) is
-      C_Message : String (1 .. 80);
-      --  A fixed length string is used to aid gnatstack analysis of the
-      --  procedure.
-
-   begin
-      if Message'Length >= C_Message'Length then
-         --  Truncate the message
-
-         C_Message (1 .. 79) :=
-           Message (Message'First .. Message'First + 78);
-         C_Message (80) := ASCII.NUL;
-      else
-         C_Message (1 .. Message'Length) := Message;
-         C_Message (Message'Length + 1) := ASCII.NUL;
-      end if;
-
-      Last_Chance_Handler (C_Message'Address, 0);
-   end Call_Last_Chance_Handler_With_Message;
 
    ---------------------
    -- Raise_Exception --
@@ -76,24 +46,7 @@ package body Ada.Exceptions is
       --  which is not part of ZFP runtime library.
 
    begin
-      --  The last chance handler requires a NUL terminated C string as the Msg
-      --  parameter.
-
-      if Message'Length = 0 then
-         --  Pass a NUL character to the last chance handler in the case of no
-         --  message.
-
-         Last_Chance_Handler (Empty_C_String'Address, 0);
-      else
-         --  While the compiler is efficient and passes NUL terminated literals
-         --  to this procedure, users who directly call are not likely to be
-         --  as thoughtful due to the String interface. Consequently we may
-         --  need to append NUL to the Message. Since this procedure is inlined
-         --  and NUL appending requires the stack, a seperate procedure is used
-         --  to ensure the caller's stack is not unduly bloated.
-
-         Call_Last_Chance_Handler_With_Message (Message);
-      end if;
+      System.Machine_Reset.Stop;
    end Raise_Exception;
 
 end Ada.Exceptions;

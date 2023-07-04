@@ -33,8 +33,9 @@
 --  On bareboard platform, this returns to the monitor or reset the board.
 --  In the context of an OS, this terminates the process.
 
-package System.Machine_Reset is
-   pragma No_Elaboration_Code_All;
+package System.Machine_Reset
+   with Preelaborate, No_Elaboration_Code_All
+is
 
    procedure Stop;
    pragma No_Return (Stop);

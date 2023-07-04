@@ -30,67 +30,12 @@
 ------------------------------------------------------------------------------
 
 --  Default last chance handler for no propagation runtimes
-
-with Ada.Unchecked_Conversion;
 with System.Machine_Reset;
 
-with GNAT.IO; use GNAT.IO;
---  We rely on GNAT packages for the output. Usually, Ada predefined units
---  cannot depends on GNAT units, as the user could use the GNAT hierarchy.
---  However, this implementation of Last_Chance_Handler is a default one, that
---  could be redefined by the user.
-
-with Bare_Runtime_Config;
-
 procedure Ada.Exceptions.Last_Chance_Handler
-  (Msg : System.Address; Line : Integer)
+   (Msg  : System.Address;
+    Line : Integer)
 is
-   procedure Put (Str : System.Address);
-   --  Put for a nul-terminated string (a C string)
-
-   ---------
-   -- Put --
-   ---------
-
-   procedure Put (Str : System.Address) is
-      type C_String_Ptr is access String (1 .. Positive'Last);
-      function To_C_String_Ptr is new Ada.Unchecked_Conversion
-        (System.Address, C_String_Ptr);
-
-      Msg_Str : constant C_String_Ptr := To_C_String_Ptr (Str);
-
-   begin
-      for J in Msg_Str'Range loop
-         exit when Msg_Str (J) = Character'Val (0);
-         Put (Msg_Str (J));
-      end loop;
-   end Put;
-
 begin
-   if Bare_Runtime_Config.LCH_Print_Info then
-      Put_Line ("In last chance handler");
-
-      if Line /= 0 then
-         Put ("Predefined exception raised at ");
-         Put (Msg);
-         Put (':');
-         Put (Line);
-      else
-         Put ("User defined exception, message: ");
-         Put (Msg);
-      end if;
-
-      New_Line;
-   end if;
-
-   if Bare_Runtime_Config.LCH_Reset then
-      --  Stop the program
-
-      System.Machine_Reset.Stop;
-   else
-      --  Endless loop
-      loop
-         null;
-      end loop;
-   end if;
+   System.Machine_Reset.Stop;
 end Ada.Exceptions.Last_Chance_Handler;
