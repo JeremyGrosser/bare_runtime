@@ -28,27 +28,14 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+with System.Machine_Code;
 
 package body System.Machine_Reset is
-   procedure OS_Exit;
-   pragma Import (Ada, OS_Exit, "__gnat_exit");
-   pragma No_Return (OS_Exit);
-   --  Reset the board
-
-   procedure OS_Abort;
-   pragma Export (Ada, OS_Abort, "abort");
-   pragma No_Return (OS_Abort);
-   --  Same as OS_Exit (rename in body to allow multiple pragma Export)
-
-   --------------
-   -- OS_Abort --
-   --------------
-
-   procedure OS_Abort renames OS_Exit;
-
-   ----------
-   -- Stop --
-   ----------
-
-   procedure Stop renames OS_Exit;
+   procedure Stop is
+   begin
+      System.Machine_Code.Asm ("bkpt #0", Volatile => True);
+      loop
+         null;
+      end loop;
+   end Stop;
 end System.Machine_Reset;

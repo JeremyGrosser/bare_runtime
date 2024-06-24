@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  Last chance handler. Unhandled exceptions are passed to this routine
+pragma SPARK_Mode (On);
 
 with System;
 
