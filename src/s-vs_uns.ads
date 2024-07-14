@@ -2,15 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
--- S Y S T E M . A D D R E S S _ T O _ A C C E S S _ C O N V E R S I O N S  --
+--                         S Y S T E M . V S _ U N S                        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
---                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
+--          Copyright (C) 2023-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,33 +29,29 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-generic
-   type Object (<>) is limited private;
+--  This package contains specification functions for scanning modular Unsigned
+--  values for use in Text_IO.Modular_IO, and the Value attribute.
 
-package System.Address_To_Access_Conversions is
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  contract cases should not be executed at runtime as well, in order not to
+--  slow down the execution of these functions.
+
+pragma Assertion_Policy (Pre                => Ignore,
+                         Post               => Ignore,
+                         Contract_Cases     => Ignore,
+                         Ghost              => Ignore,
+                         Subprogram_Variant => Ignore);
+
+with System.Unsigned_Types;
+with System.Value_U_Spec;
+
+package System.Vs_Uns with SPARK_Mode, Ghost is
    pragma Preelaborate;
 
-   pragma Compile_Time_Warning
-     (Object'Unconstrained_Array,
-      "Object is unconstrained array type" & ASCII.LF &
-      "To_Pointer results may not have bounds");
+   subtype Unsigned is Unsigned_Types.Unsigned;
 
-   type Object_Pointer is access all Object;
-   for Object_Pointer'Size use Standard'Address_Size;
+   package Spec is new System.Value_U_Spec (Unsigned);
 
-   pragma No_Strict_Aliasing (Object_Pointer);
-   --  Strictly speaking, this routine should not be used to generate pointers
-   --  to other than proper values of the proper type, but in practice, this
-   --  is done all the time. This pragma stops the compiler from doing some
-   --  optimizations that may cause unexpected results based on the assumption
-   --  of no strict aliasing.
-
-   function To_Pointer (Value : Address)        return Object_Pointer with
-     Global => null;
-   function To_Address (Value : Object_Pointer) return Address with
-     SPARK_Mode => Off;
-
-   pragma Import (Intrinsic, To_Pointer);
-   pragma Import (Intrinsic, To_Address);
-
-end System.Address_To_Access_Conversions;
+end System.Vs_Uns;

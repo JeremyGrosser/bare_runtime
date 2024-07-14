@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2012-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,8 +40,6 @@ with GNAT.IO; use GNAT.IO;
 --  However, this implementation of Last_Chance_Handler is a default one, that
 --  could be redefined by the user.
 
-with bare_runtime_Config;
-
 procedure Ada.Exceptions.Last_Chance_Handler
   (Msg : System.Address; Line : Integer)
 is
@@ -67,30 +65,22 @@ is
    end Put;
 
 begin
-   if bare_runtime_Config.LCH_Print_Info then
-      Put_Line ("In last chance handler");
+   Put_Line ("In last chance handler");
 
-      if Line /= 0 then
-         Put ("Predefined exception raised at ");
-         Put (Msg);
-         Put (':');
-         Put (Line);
-      else
-         Put ("User defined exception, message: ");
-         Put (Msg);
-      end if;
-
-      New_Line;
-   end if;
-
-   if bare_runtime_Config.LCH_Reset then
-      --  Stop the program
-
-      System.Machine_Reset.Stop;
+   if Line /= 0 then
+      Put ("Predefined exception raised at ");
+      Put (Msg);
+      Put (':');
+      Put (Line);
    else
-      --  Endless loop
-      loop
-         null;
-      end loop;
+      Put ("User defined exception, message: ");
+      Put (Msg);
    end if;
+
+   New_Line;
+   Put_Line ("now suspending");
+
+   --  Stop the program
+
+   System.Machine_Reset.Stop;
 end Ada.Exceptions.Last_Chance_Handler;

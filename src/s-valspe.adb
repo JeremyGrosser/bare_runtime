@@ -2,15 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
--- S Y S T E M . A D D R E S S _ T O _ A C C E S S _ C O N V E R S I O N S  --
+--                      S Y S T E M . V A L _ S P E C                       --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
---                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
+--          Copyright (C) 2023-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,33 +29,59 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-generic
-   type Object (<>) is limited private;
+--  Ghost code, loop invariants and assertions in this unit are meant for
+--  analysis only, not for run-time checking, as it would be too costly
+--  otherwise. This is enforced by setting the assertion policy to Ignore.
 
-package System.Address_To_Access_Conversions is
-   pragma Preelaborate;
+pragma Assertion_Policy (Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
 
-   pragma Compile_Time_Warning
-     (Object'Unconstrained_Array,
-      "Object is unconstrained array type" & ASCII.LF &
-      "To_Pointer results may not have bounds");
+package body System.Val_Spec
+  with SPARK_Mode
+is
 
-   type Object_Pointer is access all Object;
-   for Object_Pointer'Size use Standard'Address_Size;
+   ---------------------------
+   -- First_Non_Space_Ghost --
+   ---------------------------
 
-   pragma No_Strict_Aliasing (Object_Pointer);
-   --  Strictly speaking, this routine should not be used to generate pointers
-   --  to other than proper values of the proper type, but in practice, this
-   --  is done all the time. This pragma stops the compiler from doing some
-   --  optimizations that may cause unexpected results based on the assumption
-   --  of no strict aliasing.
+   function First_Non_Space_Ghost
+     (S        : String;
+      From, To : Integer) return Positive
+   is
+   begin
+      for J in From .. To loop
+         if S (J) /= ' ' then
+            return J;
+         end if;
 
-   function To_Pointer (Value : Address)        return Object_Pointer with
-     Global => null;
-   function To_Address (Value : Object_Pointer) return Address with
-     SPARK_Mode => Off;
+         pragma Loop_Invariant (for all K in From .. J => S (K) = ' ');
+      end loop;
 
-   pragma Import (Intrinsic, To_Pointer);
-   pragma Import (Intrinsic, To_Address);
+      raise Program_Error;
+   end First_Non_Space_Ghost;
 
-end System.Address_To_Access_Conversions;
+   -----------------------
+   -- Last_Number_Ghost --
+   -----------------------
+
+   function Last_Number_Ghost (Str : String) return Positive is
+   begin
+      pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
+                       "occurs in ghost code, not executable");
+
+      for J in Str'Range loop
+         if Str (J) not in '0' .. '9' | '_' then
+            return J - 1;
+         end if;
+
+         pragma Loop_Invariant
+           (for all K in Str'First .. J => Str (K) in '0' .. '9' | '_');
+      end loop;
+
+      return Str'Last;
+
+      pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
+   end Last_Number_Ghost;
+
+end System.Val_Spec;

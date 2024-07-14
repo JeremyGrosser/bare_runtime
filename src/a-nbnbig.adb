@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                      S Y S T E M . F A T _ S F L T                       --
+--               ADA.NUMERICS.BIG_NUMBERS.BIG_INTEGERS_GHOST                --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--            Copyright (C) 2021-2023, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,19 +29,53 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains an instantiation of the floating-point attribute
---  runtime routines for the type Short_Float.
+--  This body is provided as a work-around for a GNAT compiler bug, as GNAT
+--  currently does not compile instantiations of the spec with imported ghost
+--  generics for packages Signed_Conversions and Unsigned_Conversions.
 
-with System.Fat_Gen;
+--  Ghost code in this unit is meant for analysis only, not for run-time
+--  checking. This is enforced by setting the assertion policy to Ignore.
 
-package System.Fat_SFlt is
-   pragma Pure;
+pragma Assertion_Policy (Ghost => Ignore);
 
-   --  Note the only entity from this package that is accessed by Rtsfind
-   --  is the name of the package instantiation. Entities within this package
-   --  (i.e. the individual floating-point attribute routines) are accessed
-   --  by name using selected notation.
+package body Ada.Numerics.Big_Numbers.Big_Integers_Ghost with
+   SPARK_Mode => Off
+is
 
-   package Attr_Short_Float is new System.Fat_Gen (Short_Float);
+   package body Signed_Conversions with
+     SPARK_Mode => Off
+   is
 
-end System.Fat_SFlt;
+      function To_Big_Integer (Arg : Int) return Valid_Big_Integer is
+      begin
+         raise Program_Error;
+         return (null record);
+      end To_Big_Integer;
+
+      function From_Big_Integer (Arg : Valid_Big_Integer) return Int is
+      begin
+         raise Program_Error;
+         return 0;
+      end From_Big_Integer;
+
+   end Signed_Conversions;
+
+   package body Unsigned_Conversions with
+     SPARK_Mode => Off
+   is
+
+      function To_Big_Integer (Arg : Int) return Valid_Big_Integer is
+      begin
+         raise Program_Error;
+         return (null record);
+      end To_Big_Integer;
+
+      function From_Big_Integer (Arg : Valid_Big_Integer) return Int is
+      begin
+         raise Program_Error;
+         return 0;
+      end From_Big_Integer;
+
+   end Unsigned_Conversions;
+
+end Ada.Numerics.Big_Numbers.Big_Integers_Ghost;

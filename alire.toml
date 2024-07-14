@@ -14,5 +14,5 @@ LCH_Print_Info = { type = "Boolean", default = false }
 LCH_Reset = { type = "Boolean", default = false }
 Enable_Text_IO = { type = "Boolean", default = false }
 
-# [[depends-on]]
-# gnat = "~11"
+[[depends-on]]
+gnat = "~14"

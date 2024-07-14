@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---           A D A . U N C H E C K E D _ D E A L L O C A T I O N            --
+--                         A D A . N U M E R I C S                          --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -13,14 +13,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-generic
-   type Object (<>) is limited private;
-   type Name is access Object;
-
-procedure Ada.Unchecked_Deallocation (X : in out Name) with
-  Depends => (X    => null,  --  X on exit does not depend on its input value
-              null => X),    --  X's input value has no effect
-  Post => X = null;          --  X's output value is null
-pragma Preelaborate (Unchecked_Deallocation);
-
-pragma Import (Intrinsic, Ada.Unchecked_Deallocation);
+package Ada.Numerics.Big_Numbers
+  with Pure
+is
+   subtype Field is Integer range 0 .. 255;
+   subtype Number_Base is Integer range 2 .. 16;
+end Ada.Numerics.Big_Numbers;
