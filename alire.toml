@@ -8,11 +8,3 @@ maintainers-logins = ["Fabien-Chouteau"]
 [configuration]
 generate_gpr = false
 generate_c = false
-
-[configuration.variables]
-LCH_Print_Info = { type = "Boolean", default = false }
-LCH_Reset = { type = "Boolean", default = false }
-Enable_Text_IO = { type = "Boolean", default = false }
-
-[[depends-on]]
-gnat = "~14"
